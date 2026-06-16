@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Nadu — The LLM Kingdoms of the South</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --parchment:#f5e8c8;--parchment2:#ede0b0;--ink:#2a1a0a;--ink2:#4a2e10;
+  --border:#8b6914;--border2:#c9a227;
+  --chola:#c0392b;--pandya:#1a5276;--chera:#1a6b2a;--pallava:#7d3c98;
+  --hoysala:#b7770d;--vijayanagara:#c0392b;
+  --gold:#d4a017;--gold2:#f0c040;
+  --water:#2980b9;--water2:#5dade2;
+  --mountain:#7f8c8d;--forest:#27ae60;
+  --crop1:#e8c84a;--crop2:#a8d850;--crop3:#c8a840;
+  --temple:#8b4513;--road:#c8a882;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--parchment);
+  color:var(--ink);
+  font-family:'Lora',serif;
+  height:100vh;overflow:hidden;
+}
+
+/* HEADER */
+header{
+  padding:10px 20px;
+  background:linear-gradient(to bottom, #2a1a0a, #4a2e10);
+  border-bottom:3px solid var(--gold);
+  display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:100;
+}
+.header-title{
+  font-family:'Cinzel',serif;font-size:18px;font-weight:700;
+  color:var(--gold2);letter-spacing:.06em;text-shadow:0 1px 4px #0006;
+}
+.header-sub{font-size:11px;color:#c8a070;font-style:italic;flex:1;}
+.season-badge{
+  font-family:'Cinzel',serif;font-size:10px;color:var(--gold2);
+  border:1px solid var(--gold);padding:4px 12px;border-radius:2px;
+  background:rgba(212,160,23,.15);letter-spacing:.08em;
+}
+.year-badge{
+  font-family:'Space Mono',monospace;font-size:11px;color:#c8a070;
+}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:1fr 300px;height:calc(100vh - 57px);}
+
+/* MAP */
+.map-panel{position:relative;overflow:hidden;border-right:3px solid var(--border);}
+canvas#map{display:block;width:100%;height:100%;}
+
+/* CONTROLS */
+.controls{
+  position:absolute;top:12px;left:12px;display:flex;gap:7px;
+}
+.btn{
+  font-family:'Cinzel',serif;font-size:10px;font-weight:600;letter-spacing:.06em;
+  padding:5px 14px;
+  background:linear-gradient(to bottom,#4a2e10,#2a1a0a);
+  border:1px solid var(--gold);color:var(--gold2);cursor:pointer;border-radius:2px;
+  transition:all .2s;box-shadow:0 2px 6px #0004;
+}
+.btn:hover{background:linear-gradient(to bottom,#6a3e18,#3a2a0e);box-shadow:0 0 10px var(--gold)55;}
+.btn.active{background:linear-gradient(to bottom,#8b6914,#5a3e08);color:#fff8e0;}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:linear-gradient(135deg,#2a1a0a,#4a2e10);
+  border:1px solid var(--gold);padding:10px 20px;
+  font-family:'Lora',serif;font-size:12px;color:var(--gold2);
+  border-radius:3px;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s;
+  opacity:0;pointer-events:none;max-width:70%;text-align:center;
+  box-shadow:0 4px 20px #0008;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* LEGEND */
+.map-legend{
+  position:absolute;bottom:12px;right:12px;
+  background:rgba(42,26,10,.9);border:1px solid var(--gold);
+  border-radius:3px;padding:8px 12px;
+  font-size:10px;color:#c8a070;
+}
+.map-legend-title{font-family:'Cinzel',serif;font-size:9px;color:var(--gold2);letter-spacing:.06em;margin-bottom:6px;}
+.legend-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.legend-swatch{width:14px;height:10px;border-radius:1px;flex-shrink:0;}
+
+/* SIDEBAR */
+.sidebar{
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--parchment2);
+}
+.tabs{
+  display:flex;
+  background:linear-gradient(to bottom,#2a1a0a,#3a2208);
+  border-bottom:2px solid var(--gold);
+}
+.tab{
+  flex:1;padding:9px 4px;font-family:'Cinzel',serif;font-size:9px;font-weight:600;
+  letter-spacing:.08em;text-align:center;cursor:pointer;color:#8b6914;
+  border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;
+}
+.tab.active{color:var(--gold2);border-bottom-color:var(--gold2);}
+.tab:hover{color:#c9a227;}
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.tab-content.active{display:flex;}
+
+/* KINGDOM CARDS */
+.k-scroll{overflow-y:auto;flex:1;padding:10px;scrollbar-width:thin;}
+.k-card{
+  border:1px solid;border-radius:3px;padding:10px;margin-bottom:8px;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.k-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.k-card:hover{box-shadow:0 3px 12px #0003;}
+.k-card.selected{box-shadow:0 0 0 2px currentColor;}
+.k-card-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.k-symbol{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;border:2px solid;
+}
+.k-title{flex:1;}
+.k-name{font-family:'Cinzel',serif;font-size:13px;font-weight:700;}
+.k-ruler{font-size:10px;font-style:italic;margin-top:1px;}
+.k-status-pill{font-size:8px;font-family:'Space Mono',monospace;padding:2px 6px;border-radius:10px;border:1px solid;letter-spacing:.04em;}
+
+.k-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;}
+.k-stat{text-align:center;padding:4px 2px;border-radius:2px;background:rgba(255,255,255,.3);}
+.k-stat-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
+.k-stat-key{font-size:8px;color:var(--ink2);margin-top:1px;}
+
+.k-bars{display:flex;flex-direction:column;gap:3px;}
+.k-bar-row{display:flex;align-items:center;gap:6px;font-size:9px;}
+.k-bar-label{width:40px;color:var(--ink2);}
+.k-bar-track{flex:1;height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;}
+.k-bar-fill{height:100%;border-radius:2px;transition:width .5s ease;}
+
+/* DETAIL */
+.detail-panel{
+  border-top:2px solid var(--border);padding:12px;
+  background:var(--parchment);font-size:11px;
+}
+.detail-title{font-family:'Cinzel',serif;font-size:14px;margin-bottom:8px;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.detail-cell{background:rgba(139,105,20,.08);border:1px solid var(--border2)33;border-radius:2px;padding:5px 7px;}
+.detail-cell-key{font-size:8px;color:var(--ink2);letter-spacing:.04em;text-transform:uppercase;}
+.detail-cell-val{font-size:12px;font-weight:600;margin-top:2px;font-family:'Space Mono',monospace;}
+.achievement-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.achievement{font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid var(--border);color:var(--ink2);background:rgba(139,105,20,.08);}
+
+/* LOG */
+.log-scroll{flex:1;overflow-y:auto;padding:8px 10px;scrollbar-width:thin;}
+.log-entry{
+  font-size:11px;line-height:1.6;padding:5px 8px;margin-bottom:3px;
+  border-radius:2px;color:var(--ink2);
+  border-left:2px solid transparent;
+}
+.log-tick{font-family:'Space Mono',monospace;font-size:9px;color:#a08040;margin-right:5px;}
+.log-who{font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="header-title">AI Nadu · THE LLM KINGDOMS</div>
+    <div class="header-sub">South India, age of the great model dynasties</div>
+  </div>
+  <div style="flex:1"></div>
+  <div class="season-badge" id="season-badge">KAAR KAALAM · Monsoon</div>
+  <div class="year-badge">Year <span id="year-num">1</span> · Day <span id="day-num">1</span></div>
+</header>
+
+<div class="shell">
+  <div class="map-panel">
+    <canvas id="map"></canvas>
+    <div class="controls">
+      <button class="btn active" id="btn-play">▶ PLAY</button>
+      <button class="btn" id="btn-fast">⚡ FAST</button>
+      <button class="btn" id="btn-reset">↺ RESET</button>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="map-legend">
+      <div class="map-legend-title">MAP LEGEND</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#2980b9"></div>River / Sea</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#27ae60"></div>Forest</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#7f8c8d"></div>Mountains</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#e8c84a"></div>Paddy Fields</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#8b4513"></div>Temple</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#d4a017"></div>Capital City</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="tabs">
+      <div class="tab active" data-tab="kingdoms">LLM KINGDOMS</div>
+      <div class="tab" data-tab="events">CHRONICLES</div>
+    </div>
+
+    <div class="tab-content active" id="tab-kingdoms">
+      <div class="k-scroll" id="k-list"></div>
+      <div id="detail-panel" class="detail-panel" style="display:none"></div>
+    </div>
+
+    <div class="tab-content" id="tab-events">
+      <div class="log-scroll" id="log"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────
+const GRID=32;
+const SEASONS=['KAAR KAALAM · Monsoon','குளிர் KAALAM · Winter','ILAVENIL · Spring','MUTHUVENIL · Summer'];
+const SEASON_COLORS=['#2255aa','#668866','#88aa44','#cc8822'];
+
+function rand(a,b){return a+Math.random()*(b-a);}
+function randi(a,b){return Math.floor(rand(a,b));}
+function pick(arr){return arr[randi(0,arr.length)];}
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+// ── TERRAIN TYPES ─────────────────────────────────────
+const T={PLAIN:0,PADDY:1,FOREST:2,MOUNTAIN:3,RIVER:4,SEA:5,COAST:6,TEMPLE_GROUND:7};
+
+// ── KINGDOMS ──────────────────────────────────────────
+const KINGDOM_DEFS=[
+  {
+    id:'claude',name:'Claude Nadu',symbol:'🔶',color:'#e8895c',
+    king:'Raja Dario Amodei',queen:'Rani Daniela Devi',
+    capital:'Anthropolis',traits:['Helpful & Harmless','Temple of Safety','Honest Scribes'],
+    homeCol:18,homeRow:16,strategy:'expansionist',
+    desc:'Guardians of helpful, harmless and honest AI. Builders of the grandest reasoning temples.',
+    achievements:['Constitutional AI','Safety Doctrine','Bronze Reasoning'],
+  },
+  {
+    id:'gpt',name:'GPT Nadu',symbol:'⚫',color:'#74c69d',
+    king:'Raja Sam Altman',queen:'Rani Mira Murati',
+    capital:'OpenAI Puram',traits:['Creative Traders','Plugin Masters','Token Poets'],
+    homeCol:22,homeRow:10,strategy:'trader',
+    desc:'Masters of the token sea, patrons of creative arts and plugin commerce.',
+    achievements:['RLHF Scrolls','Plugin Bazaar','ChatGPT Throne'],
+  },
+  {
+    id:'gemini',name:'Gemini Nadu',symbol:'♊',color:'#7bbcf5',
+    king:'Raja Sundar Pichai',queen:'Rani Demis Hassabis',
+    capital:'DeepMind Nagari',traits:['Multimodal Seers','Search Lords','Data Ocean Masters'],
+    homeCol:8,homeRow:16,strategy:'defender',
+    desc:'Lords of the vast data ocean, masters of sight, sound and text united.',
+    achievements:['AlphaFold Shrine','Search Fortress','Multimodal Ghats'],
+  },
+  {
+    id:'llama',name:'Llama Nadu',symbol:'🦙',color:'#ffd166',
+    king:'Raja Mark Zuckerberg',queen:'Rani Yann LeCun',
+    capital:'Meta Mandapam',traits:['Open Source Rishis','Community Builders','Weight Sharers'],
+    homeCol:18,homeRow:8,strategy:'builder',
+    desc:'Scholar kings who open their sacred weights to all. Builders of the people\'s temples.',
+    achievements:['Open Weights','Community Ashram','Research Scrolls'],
+  },
+  {
+    id:'mistral',name:'Mistral Nadu',symbol:'🌬️',color:'#f08080',
+    king:'Raja Arthur Mensch',queen:'Rani Sophia Yang',
+    capital:'Paris Nagaram',traits:['Lean Warriors','European Nobles','Efficient Archers'],
+    homeCol:10,homeRow:24,strategy:'raider',
+    desc:'Fierce lean warriors from the western lands — swift, efficient, fiercely independent.',
+    achievements:['Mixtral Blade','Efficient Quivers','French Charter'],
+  },
+];
+
+// ── WORLD STATE ───────────────────────────────────────
+let tick=0,day=1,year=1,season=0,running=false,fast=false,timer=null;
+let kingdoms=[],cells=[],particles=[],people=[];
+let selectedId=null;
+let noiseGrid=[];
+
+// ── NOISE (simple value noise for terrain) ────────────
+function generateNoise(){
+  noiseGrid=[];
+  const base=[];
+  for(let i=0;i<(GRID+1)*(GRID+1);i++)base.push(Math.random());
+  function n(x,y){return base[clamp(Math.floor(y),0,GRID)*GRID+clamp(Math.floor(x),0,GRID)];}
+  for(let y=0;y<GRID;y++){
+    for(let x=0;x<GRID;x++){
+      const fx=x/GRID,fy=y/GRID;
+      // layered noise
+      let v=n(x,y)*.5+n(x*.5,y*.5)*.3+n(x*.25,y*.25)*.2;
+      noiseGrid.push(v);
+    }
+  }
+}
+
+// ── TERRAIN GENERATION ────────────────────────────────
+function generateTerrain(){
+  generateNoise();
+  cells=[];
+  for(let y=0;y<GRID;y++){
+    for(let x=0;x<GRID;x++){
+      const n=noiseGrid[y*GRID+x];
+      // coastal south india shape
+      const distFromCenter=Math.sqrt(((x-16)/18)**2+((y-16)/18)**2);
+      const coastBias=x>24||y>28||(x>20&&y>24)?0.7:0;// sea in east/south
+      const westCoast=x<4?0.8:0;
+      const adj=n+coastBias+westCoast-distFromCenter*.2;
+
+      let terrain;
+      if(adj>0.85||x===0||x===GRID-1||y===GRID-1)terrain=T.SEA;
+      else if(adj>0.72)terrain=T.COAST;
+      else if(n<0.28&&x>3&&x<28&&y>3&&y<28)terrain=T.RIVER;
+      else if(n>0.62&&x>4&&x<12&&y>6&&y<24)terrain=T.MOUNTAIN;// Western Ghats
+      else if(n>0.55&&(x<10||y<6))terrain=T.FOREST;
+      else if(n>0.45)terrain=T.PADDY;
+      else terrain=T.PLAIN;
+
+      cells.push({
+        x,y,terrain,owner:null,
+        crops:terrain===T.PADDY?rand(.5,1):0,
+        cropGrowth:0,
+        hasTrees:terrain===T.FOREST,
+        fertility:rand(.5,1.2),
+        hasTemple:false,hasVillage:false,hasPort:false,
+        richness:rand(.7,1.3),
+      });
+    }
+  }
+
+  // place rivers more naturally — a few main rivers
+  const rivers=[[16,2,16,30],[8,4,12,28],[22,2,24,26]];
+  rivers.forEach(([x1,y1,x2,y2])=>{
+    let cx=x1,cy=y1;
+    const steps=Math.max(Math.abs(x2-x1),Math.abs(y2-y1))+randi(8,14);
+    for(let s=0;s<steps;s++){
+      const t=s/steps;
+      cx=Math.round(lerp(x1,x2,t)+rand(-1.5,1.5));
+      cy=Math.round(lerp(y1,y2,t));
+      if(cx>=0&&cx<GRID&&cy>=0&&cy<GRID){
+        const c=cellAt(cx,cy);
+        if(c&&c.terrain!==T.SEA&&c.terrain!==T.COAST)c.terrain=T.RIVER;
+      }
+    }
+  });
+}
+
+function cellAt(x,y){return cells.find(c=>c.x===x&&c.y===y);}
+function cellIdx(x,y){return y*GRID+x;}
+
+// ── PEOPLE ────────────────────────────────────────────
+const PEOPLE_TYPES=['farmer','soldier','merchant','priest','builder'];
+function spawnPeople(){
+  people=[];
+  kingdoms.forEach(k=>{
+    for(let i=0;i<8;i++){
+      const hx=k.homeX+(randi(-3,4));
+      const hy=k.homeY+(randi(-3,4));
+      const canvas=document.getElementById('map');
+      const cw=canvas.width/GRID,ch=canvas.height/GRID;
+      people.push({
+        kingdom:k.id,
+        x:(hx+rand(.1,.9))*cw,y:(hy+rand(.1,.9))*ch,
+        tx:(hx+rand(.1,.9))*cw,ty:(hy+rand(.1,.9))*ch,
+        type:pick(PEOPLE_TYPES),
+        color:k.color,
+        moveTimer:randi(0,80),
+      });
+    }
+  });
+}
+
+function updatePeople(){
+  const canvas=document.getElementById('map');
+  const cw=canvas.width/GRID,ch=canvas.height/GRID;
+  people.forEach(p=>{
+    const k=kingdoms.find(k=>k.id===p.kingdom);
+    if(!k||k.hp<=0)return;
+    p.moveTimer--;
+    if(p.moveTimer<=0){
+      const hx=k.homeX+rand(-4,5);
+      const hy=k.homeY+rand(-4,5);
+      p.tx=clamp(hx,0,GRID-1)*cw+rand(4,cw-4);
+      p.ty=clamp(hy,0,GRID-1)*ch+rand(4,ch-4);
+      p.moveTimer=randi(60,140);
+    }
+    p.x=lerp(p.x,p.tx,.015+rand(0,.01));
+    p.y=lerp(p.y,p.ty,.015+rand(0,.01));
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────
+function initWorld(){
+  tick=0;day=1;year=1;season=0;particles=[];
+  document.getElementById('log').innerHTML='';
+  document.getElementById('year-num').textContent=1;
+  document.getElementById('day-num').textContent=1;
+  document.getElementById('season-badge').textContent=SEASONS[0];
+  generateTerrain();
+
+  kingdoms=KINGDOM_DEFS.map(def=>{
+    // place capital
+    const hx=def.homeCol,hy=def.homeRow;
+    for(let r=-2;r<=2;r++) for(let c=-2;c<=2;c++){
+      const cell=cellAt(hx+c,hy+r);
+      if(cell&&cell.terrain!==T.SEA&&cell.terrain!==T.RIVER){
+        cell.owner=def.id;
+        if(Math.abs(c)<=1&&Math.abs(r)<=1)cell.hasVillage=true;
+      }
+    }
+    const capCell=cellAt(hx,hy);
+    if(capCell){capCell.hasTemple=true;capCell.terrain=T.PLAIN;}
+
+    const canvas=document.getElementById('map');
+    const cw=canvas.width/GRID,ch=canvas.height/GRID;
+
+    return{
+      ...def,
+      hp:100,maxHp:100,
+      gold:80,food:80,army:50,faith:60,trade:50,
+      homeX:hx,homeY:hy,
+      x:(hx+.5)*cw,y:(hy+.5)*ch,
+      territory:new Set(),
+      allies:[],wars:[],
+      pulsePhase:rand(0,Math.PI*2),
+      harvestTimer:0,status:'Prosperous',
+    };
+  });
+
+  // mark initial territories
+  kingdoms.forEach(k=>{
+    for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){
+      const key=`${k.homeX+dx},${k.homeY+dy}`;
+      k.territory.add(key);
+    }
+  });
+
+  spawnPeople();
+  renderSidebar();draw();
+}
+
+// ── SIMULATION STEP ───────────────────────────────────
+function step(){
+  tick++;day++;
+  if(day>90){day=1;season=(season+1)%4;year+=season===0?1:0;}
+  document.getElementById('year-num').textContent=year;
+  document.getElementById('day-num').textContent=day;
+  document.getElementById('season-badge').textContent=SEASONS[season];
+
+  const isMonsoon=season===0,isWinter=season===1;
+  const cropBonus=isMonsoon?1.5:isWinter?.7:1.0;
+
+  // grow crops
+  cells.forEach(c=>{
+    if(c.terrain===T.PADDY&&c.owner){
+      c.cropGrowth+=(.008*cropBonus*c.fertility);
+      if(c.cropGrowth>=1){c.cropGrowth=0;c.crops=Math.min(1,c.crops+.15);}
+    }
+    if(c.terrain===T.PADDY&&!c.owner&&c.crops>0)c.crops=Math.max(0,c.crops-.005);
+  });
+
+  kingdoms.forEach(k=>{
+    if(k.hp<=0)return;
+    k.pulsePhase+=.06;
+
+    // harvest from territory
+    k.harvestTimer++;
+    if(k.harvestTimer>=8){
+      k.harvestTimer=0;
+      let foodGain=0,goldGain=0;
+      k.territory.forEach(key=>{
+        const[cx,cy]=key.split(',').map(Number);
+        const c=cellAt(cx,cy);if(!c)return;
+        if(c.terrain===T.PADDY&&c.crops>.3){foodGain+=c.crops*.8;c.crops=Math.max(0,c.crops-.1);}
+        if(c.terrain===T.COAST||c.hasPort)goldGain+=.5*c.richness;
+        if(c.terrain===T.PLAIN)foodGain+=.2;
+        if(c.hasVillage)foodGain+=.3;
+      });
+      k.food=clamp(k.food+foodGain*cropBonus*.5,0,200);
+      k.gold=clamp(k.gold+goldGain*.4,0,200);
+    }
+
+    // army upkeep
+    k.army=clamp(k.army-(k.army*.003),0,200);
+    k.food=clamp(k.food-.8,0,200);
+    k.gold=clamp(k.gold-.3,0,200);
+    if(k.food<5){k.hp=clamp(k.hp-1.5,0,k.maxHp);}
+    if(k.food>40&&k.hp<k.maxHp)k.hp=clamp(k.hp+.5,0,k.maxHp);
+
+    // strategy
+    if(Math.random()<.3)doStrategy(k);
+
+    // status
+    const pct=k.hp/k.maxHp;
+    if(pct>.8)k.status='Prosperous';
+    else if(pct>.55)k.status='Stable';
+    else if(pct>.3)k.status='Troubled';
+    else k.status='Declining';
+    if(k.hp<=0){k.status='Fallen';logEvent(k,`kingdom has fallen! The dynasty ends.`,k.color);showToast(`${k.name} has fallen!`,k.color);}
+  });
+
+  if(Math.random()<.06)worldEvent();
+  updatePeople();
+  renderSidebar();draw();
+}
+
+// ── STRATEGIES ────────────────────────────────────────
+function doStrategy(k){
+  const alive=kingdoms.filter(o=>o.id!==k.id&&o.hp>0);
+  switch(k.strategy){
+    case'expansionist':{
+      if(Math.random()<.35)expandTerritory(k);
+      if(k.gold>60&&k.army<120&&Math.random()<.3){k.army+=randi(5,15);k.gold-=10;}
+      // attack nearby weak kingdoms
+      if(k.army>60&&Math.random()<.25){
+        const weak=alive.filter(o=>!k.allies.includes(o.id)).sort((a,b)=>a.hp-b.hp)[0];
+        if(weak){battle(k,weak);}
+      }
+      break;
+    }
+    case'trader':{
+      k.trade=clamp(k.trade+.5,0,100);
+      k.gold=clamp(k.gold+.8,0,200);
+      if(Math.random()<.2&&!k.allies.includes(alive[0]?.id)){
+        const partner=pick(alive.filter(o=>!k.wars.includes(o.id)));
+        if(partner){formAlliance(k,partner);}
+      }
+      break;
+    }
+    case'defender':{
+      if(k.food>60&&Math.random()<.3)expandTerritory(k);
+      k.faith=clamp(k.faith+.3,0,100);
+      if(k.hp<70&&Math.random()<.3)k.hp=clamp(k.hp+3,0,k.maxHp);// fortify
+      // peace deals
+      if(k.wars.length&&Math.random()<.3){
+        const enemy=kingdoms.find(o=>k.wars.includes(o.id)&&o.hp>0);
+        if(enemy)makePeace(k,enemy);
+      }
+      break;
+    }
+    case'builder':{
+      // build temples and villages
+      if(k.gold>50&&Math.random()<.2){
+        buildStructure(k);k.faith=clamp(k.faith+2,0,100);k.gold-=8;
+      }
+      if(Math.random()<.2)expandTerritory(k);
+      break;
+    }
+    case'raider':{
+      if(k.army>40&&Math.random()<.35){
+        const target=pick(alive.filter(o=>!k.allies.includes(o.id)));
+        if(target)battle(k,target);
+      }
+      if(Math.random()<.3)expandTerritory(k);
+      if(k.gold<30)k.gold+=randi(3,8);// plunder
+      break;
+    }
+  }
+}
+
+function battle(attacker,defender){
+  const atkPow=attacker.army*.8+attacker.gold*.1;
+  const defPow=defender.army*.6+defender.hp*.2;
+  const dmgToDefender=clamp(randi(6,20)*(atkPow/Math.max(defPow,20)),2,30);
+  const dmgToAttacker=clamp(randi(3,12)*(defPow/Math.max(atkPow,20)),1,18);
+  defender.hp=clamp(defender.hp-dmgToDefender,0,defender.maxHp);
+  attacker.hp=clamp(attacker.hp-dmgToAttacker,0,attacker.maxHp);
+  attacker.army=clamp(attacker.army-randi(3,8),0,200);
+  defender.army=clamp(defender.army-randi(2,6),0,200);
+  if(!attacker.wars.includes(defender.id))attacker.wars.push(defender.id);
+  if(!defender.wars.includes(attacker.id))defender.wars.push(attacker.id);
+  logEvent(attacker,`⚔️ attacked <span class="log-who" style="color:${defender.color}">${defender.name}</span>! (−${Math.round(dmgToDefender)} HP)`,attacker.color);
+  spawnParticles(attacker.x,attacker.y,defender.x,defender.y,attacker.color,'battle');
+
+  // steal some territory
+  if(Math.random()<.4&&defender.hp<60){stealTerritory(attacker,defender);}
+}
+
+function formAlliance(a,b){
+  if(!a.allies.includes(b.id))a.allies.push(b.id);
+  if(!b.allies.includes(a.id))b.allies.push(a.id);
+  logEvent(a,`🤝 allied with <span class="log-who" style="color:${b.color}">${b.name}</span>`,a.color);
+  spawnParticles(a.x,a.y,b.x,b.y,'#d4a017','line');
+}
+
+function makePeace(a,b){
+  a.wars=a.wars.filter(id=>id!==b.id);
+  b.wars=b.wars.filter(id=>id!==a.id);
+  a.gold=clamp(a.gold-5,0,200);b.gold=clamp(b.gold+5,0,200);
+  logEvent(a,`🕊️ made peace with <span class="log-who" style="color:${b.color}">${b.name}</span>`,a.color);
+}
+
+function expandTerritory(k){
+  const dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+  const keys=[...k.territory];
+  for(const key of keys){
+    const[hx,hy]=key.split(',').map(Number);
+    for(const[dx,dy]of dirs){
+      const nx=hx+dx,ny=hy+dy;
+      if(nx<0||ny<0||nx>=GRID||ny>=GRID)continue;
+      const nkey=`${nx},${ny}`;
+      if(k.territory.has(nkey))continue;
+      const c=cellAt(nx,ny);if(!c||c.terrain===T.SEA)continue;
+      if(c.owner){
+        const other=kingdoms.find(o=>o.id===c.owner);
+        if(other&&other.hp>25&&other.id!==k.id)continue;
+      }
+      k.territory.add(nkey);c.owner=k.id;
+      if(!c.hasVillage&&Math.random()<.15){c.hasVillage=true;}
+      return;
+    }
+  }
+}
+
+function stealTerritory(winner,loser){
+  const loserCells=[...loser.territory].filter(k=>{
+    const[x,y]=k.split(',').map(Number);
+    return [...winner.territory].some(wk=>{const[wx,wy]=wk.split(',').map(Number);return Math.abs(wx-x)<=2&&Math.abs(wy-y)<=2;});
+  });
+  if(loserCells.length){
+    const stolen=pick(loserCells);
+    loser.territory.delete(stolen);winner.territory.add(stolen);
+    const c=cellAt(...stolen.split(',').map(Number));if(c)c.owner=winner.id;
+  }
+}
+
+function buildStructure(k){
+  const cells_=[...k.territory].map(key=>key.split(',').map(Number)).map(([x,y])=>cellAt(x,y)).filter(Boolean);
+  const plain=cells_.filter(c=>c.terrain===T.PLAIN&&!c.hasTemple);
+  if(plain.length){
+    const c=pick(plain);c.hasTemple=true;
+    logEvent(k,`🛕 built a new temple in ${k.capital}`,k.color);
+  }
+}
+
+function worldEvent(){
+  const alive=kingdoms.filter(o=>o.hp>0);
+  const events=[
+    ()=>{
+      const k=pick(alive);k.food=clamp(k.food+randi(20,40),0,200);
+      logEvent(k,`📜 A new training run completes! The granaries overflow with tokens.`,k.color);
+      showToast(`📜 ${k.name} completes a grand training run!`,k.color);
+      spawnParticles(k.x,k.y,k.x,k.y,'#e8c84a','burst');
+    },
+    ()=>{
+      const k=pick(alive);const breach=randi(10,25);k.food=clamp(k.food-breach,0,200);
+      logEvent(k,`⚠️ Data contamination! Token reserves fall by ${breach}.`,'#c0392b');
+      showToast(`⚠️ Data breach strikes ${k.name}!`,'#c0392b');
+    },
+    ()=>{
+      if(alive.length<2)return;
+      const a=pick(alive),b=pick(alive.filter(x=>x!==a));
+      formAlliance(a,b);
+      showToast(`🤝 ${a.name} and ${b.name} sign a royal API treaty!`,'#d4a017');
+    },
+    ()=>{
+      const k=pick(alive);k.gold=clamp(k.gold+randi(15,35),0,200);
+      logEvent(k,`⚓ Enterprise customers arrive! Revenue prospers.`,k.color);
+      showToast(`⚓ Enterprise gold flows into ${k.name}!`,'#d4a017');
+      spawnParticles(k.x,k.y,k.x,k.y,'#d4a017','burst');
+    },
+    ()=>{
+      const k=pick(alive);k.faith=clamp(k.faith+randi(10,20),0,100);k.gold=clamp(k.gold+5,0,200);
+      buildStructure(k);
+      showToast(`🛕 A new model version consecrated in ${k.capital}!`,'#8b4513');
+    },
+    ()=>{
+      alive.forEach(k=>{k.food=clamp(k.food-randi(5,15),0,200);});
+      showToast(`🌊 Regulatory floods sweep across the AI land!`,'#2980b9');
+      logEvent(alive[0],'🌊 New AI regulations damage compute reserves kingdom-wide.','#2980b9');
+    },
+    ()=>{
+      const k=pick(alive);k.army=clamp(k.army+randi(15,30),0,200);
+      logEvent(k,`⚔️ New GPU cluster unlocked! Army of parameters grows.`,k.color);
+      showToast(`⚡ ${k.name} scales up its GPU army!`,k.color);
+    },
+  ];
+  pick(events)();
+}
+
+// ── PARTICLES ─────────────────────────────────────────
+function spawnParticles(x1,y1,x2,y2,color,type){
+  for(let i=0;i<(type==='burst'?16:type==='battle'?10:8);i++){
+    const t=type==='line'?i/7:0;
+    const angle=(i/16)*Math.PI*2;
+    particles.push({
+      x:x1+t*(x2-x1)+rand(-4,4),y:y1+t*(y2-y1)+rand(-4,4),
+      vx:type==='burst'?Math.cos(angle)*rand(2,5):type==='battle'?rand(-3,3):rand(-.5,.5),
+      vy:type==='burst'?Math.sin(angle)*rand(2,5):type==='battle'?rand(-3,1):rand(-1.5,-0.5),
+      color,life:type==='battle'?40:55,maxLife:type==='battle'?40:55,size:rand(1.5,3),
+    });
+  }
+}
+
+// ── DRAW ──────────────────────────────────────────────
+const TERRAIN_COLORS=[
+  '#c8a878',// PLAIN — warm earth
+  '#6aaa20',// PADDY — green
+  '#2d7a1c',// FOREST — dark green
+  '#8a8070',// MOUNTAIN — grey
+  '#3a80c8',// RIVER — blue
+  '#2060a8',// SEA — deep blue
+  '#c8b890',// COAST — sandy
+  '#c8a878',// TEMPLE_GROUND
+];
+const PADDY_STAGES=['#c8a878','#7ec850','#98e040','#e8d840','#e8b820'];
+
+function draw(){
+  const canvas=document.getElementById('map');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const cw=W/GRID,ch=H/GRID;
+
+  ctx.clearRect(0,0,W,H);
+
+  // TERRAIN
+  cells.forEach(c=>{
+    const px=c.x*cw,py=c.y*ch;
+
+    if(c.terrain===T.PADDY){
+      // crop growth colors
+      const stage=Math.floor(c.crops*4);
+      ctx.fillStyle=PADDY_STAGES[Math.min(stage,4)];
+    } else if(c.terrain===T.SEA){
+      // animated water
+      const wave=Math.sin(tick*.04+c.x*.4+c.y*.3)*.03;
+      const b=Math.round(lerp(32,96,wave+.5));
+      ctx.fillStyle=`rgb(32,${b+60},${b+120})`;
+    } else if(c.terrain===T.RIVER){
+      const wave=Math.sin(tick*.06+c.y*.5)*.04;
+      ctx.fillStyle=`rgb(50,${Math.round(128+wave*20)},${Math.round(200+wave*20)})`;
+    } else {
+      ctx.fillStyle=TERRAIN_COLORS[c.terrain];
+    }
+    ctx.fillRect(px,py,cw+.5,ch+.5);
+
+    // territory color tint
+    if(c.owner&&c.terrain!==T.SEA&&c.terrain!==T.RIVER){
+      const k=kingdoms.find(k=>k.id===c.owner);
+      if(k&&k.hp>0){
+        ctx.fillStyle=k.color+'28';ctx.fillRect(px,py,cw,ch);
+        // subtle border
+        ctx.strokeStyle=k.color+'40';ctx.lineWidth=.4;ctx.strokeRect(px+.2,py+.2,cw-.4,ch-.4);
+      }
+    }
+
+    // PADDY ROW LINES
+    if(c.terrain===T.PADDY&&c.crops>.1){
+      ctx.strokeStyle='rgba(0,80,0,0.18)';ctx.lineWidth=.5;
+      for(let row=0;row<4;row++){
+        ctx.beginPath();ctx.moveTo(px,py+row*(ch/4));ctx.lineTo(px+cw,py+row*(ch/4));ctx.stroke();
+      }
+    }
+
+    // FOREST TREES (tiny dots)
+    if(c.terrain===T.FOREST){
+      ctx.fillStyle='#1a5c10';
+      for(let t=0;t<4;t++){
+        const tx=px+((t%2)+.3)*cw*.45+.05*cw;
+        const ty=py+(Math.floor(t/2)+.3)*ch*.45+.05*ch;
+        ctx.beginPath();ctx.arc(tx,ty,cw*.14,0,Math.PI*2);ctx.fill();
+      }
+    }
+
+    // MOUNTAIN PEAKS
+    if(c.terrain===T.MOUNTAIN){
+      ctx.fillStyle='#aaa090';
+      ctx.beginPath();ctx.moveTo(px+cw*.5,py+ch*.1);ctx.lineTo(px+cw*.85,py+ch*.85);ctx.lineTo(px+cw*.15,py+ch*.85);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#e8e4dc';
+      ctx.beginPath();ctx.moveTo(px+cw*.5,py+ch*.1);ctx.lineTo(px+cw*.65,py+ch*.38);ctx.lineTo(px+cw*.35,py+ch*.38);ctx.closePath();ctx.fill();
+    }
+
+    // TEMPLES
+    if(c.hasTemple){
+      const tx=px+cw*.5,ty=py+ch*.5;
+      ctx.fillStyle='#8b4513';
+      // temple base
+      ctx.fillRect(tx-cw*.28,ty-ch*.12,cw*.56,ch*.24);
+      // gopuram (tower)
+      ctx.beginPath();ctx.moveTo(tx-cw*.16,ty-ch*.12);ctx.lineTo(tx,ty-ch*.5);ctx.lineTo(tx+cw*.16,ty-ch*.12);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#d4a017';ctx.beginPath();ctx.arc(tx,ty-ch*.5,cw*.06,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e8b820';ctx.font=`${cw*.3}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🛕',tx,ty);
+    }
+
+    // VILLAGES
+    if(c.hasVillage&&!c.hasTemple){
+      const tx=px+cw*.5,ty=py+ch*.5;
+      // huts
+      ctx.fillStyle='#c8a050';ctx.fillRect(tx-cw*.3,ty,cw*.22,ch*.28);
+      ctx.fillStyle='#8b5e1a';ctx.beginPath();ctx.moveTo(tx-cw*.35,ty);ctx.lineTo(tx-cw*.19,ty-ch*.22);ctx.lineTo(tx-cw*.03,ty);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#c8a050';ctx.fillRect(tx+cw*.05,ty,cw*.22,ch*.28);
+      ctx.fillStyle='#8b5e1a';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+cw*.16,ty-ch*.22);ctx.lineTo(tx+cw*.32,ty);ctx.closePath();ctx.fill();
+    }
+  });
+
+  // GRID (very subtle)
+  ctx.strokeStyle='rgba(100,70,30,0.07)';ctx.lineWidth=.4;
+  for(let x=0;x<=GRID;x++){ctx.beginPath();ctx.moveTo(x*cw,0);ctx.lineTo(x*cw,H);ctx.stroke();}
+  for(let y=0;y<=GRID;y++){ctx.beginPath();ctx.moveTo(0,y*ch);ctx.lineTo(W,y*ch);ctx.stroke();}
+
+  // ALLIANCES
+  const adrawn=new Set();
+  kingdoms.forEach(k=>{
+    k.allies.forEach(bid=>{
+      const key=[k.id,bid].sort().join('-');if(adrawn.has(key))return;adrawn.add(key);
+      const b=kingdoms.find(o=>o.id===bid&&o.hp>0);if(!b)return;
+      ctx.beginPath();ctx.moveTo(k.x,k.y);ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle='#d4a01766';ctx.lineWidth=1.5;ctx.setLineDash([5,8]);ctx.stroke();ctx.setLineDash([]);
+    });
+  });
+
+  // WAR LINES
+  const wdrawn=new Set();
+  kingdoms.forEach(k=>{
+    k.wars.forEach(bid=>{
+      const key=[k.id,bid].sort().join('-');if(wdrawn.has(key))return;wdrawn.add(key);
+      const b=kingdoms.find(o=>o.id===bid&&o.hp>0);if(!b)return;
+      ctx.beginPath();ctx.moveTo(k.x,k.y);ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle='#c0392b55';ctx.lineWidth=1.2;ctx.setLineDash([3,6]);ctx.stroke();ctx.setLineDash([]);
+    });
+  });
+
+  // PEOPLE (tiny figures)
+  people.forEach(p=>{
+    const k=kingdoms.find(k=>k.id===p.kingdom);if(!k||k.hp<=0)return;
+    ctx.fillStyle=k.color;
+    // body
+    ctx.beginPath();ctx.arc(p.x,p.y-4,2.5,0,Math.PI*2);ctx.fill();// head
+    ctx.fillRect(p.x-1.5,p.y-1.5,3,5);// body
+    // legs (animated)
+    const legSwing=Math.sin(tick*.15+p.x*.3)*.8;
+    ctx.fillRect(p.x-2,p.y+3.5,1.5,3+legSwing);
+    ctx.fillRect(p.x+.5,p.y+3.5,1.5,3-legSwing);
+    // type-specific dot on head
+    if(p.type==='priest'){ctx.fillStyle='#d4a017';ctx.beginPath();ctx.arc(p.x,p.y-4,1.2,0,Math.PI*2);ctx.fill();}
+  });
+
+  // PARTICLES
+  particles.forEach(p=>{
+    const a=p.life/p.maxLife;
+    ctx.globalAlpha=a*.85;ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*(.3+.7*a),0,Math.PI*2);ctx.fill();
+    p.x+=p.vx;p.y+=p.vy;p.vx*=.9;p.vy*=.9;p.vy+=.05;p.life--;
+  });
+  particles=particles.filter(p=>p.life>0);
+  ctx.globalAlpha=1;
+
+  // KINGDOM CAPITALS
+  kingdoms.forEach(k=>{
+    if(k.hp<=0){
+      ctx.globalAlpha=.25;ctx.font=`${Math.floor(cw*.9)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('💀',k.x,k.y);ctx.globalAlpha=1;return;
+    }
+    const r=cw*.9+k.territory.size*.12;
+    const pulse=1+.05*Math.sin(k.pulsePhase);
+
+    // capital glow
+    const grd=ctx.createRadialGradient(k.x,k.y,0,k.x,k.y,r*2.5*pulse);
+    grd.addColorStop(0,k.color+'50');grd.addColorStop(.5,k.color+'18');grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(k.x,k.y,r*2.5*pulse,0,Math.PI*2);ctx.fill();
+
+    // city walls (circle)
+    ctx.beginPath();ctx.arc(k.x,k.y,r*pulse,0,Math.PI*2);
+    ctx.fillStyle=k.color+'cc';ctx.fill();
+    ctx.strokeStyle=k.color;ctx.lineWidth=2;ctx.stroke();
+
+    // inner gold ring
+    ctx.beginPath();ctx.arc(k.x,k.y,r*.65*pulse,0,Math.PI*2);
+    ctx.strokeStyle='#d4a017bb';ctx.lineWidth=1.2;ctx.stroke();
+
+    // HP arc
+    ctx.beginPath();ctx.arc(k.x,k.y,r*pulse+5,-Math.PI/2,-Math.PI/2+(k.hp/k.maxHp)*Math.PI*2);
+    ctx.strokeStyle=k.color;ctx.lineWidth=3;ctx.lineCap='round';ctx.stroke();ctx.lineCap='butt';
+
+    // kingdom symbol
+    ctx.font=`${Math.floor(r*.9)}px serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(k.symbol,k.x,k.y);
+
+    // capital name (LLM name large, capital small below)
+    ctx.fillStyle='#2a1a0a';ctx.font=`bold ${Math.floor(cw*.45)}px Cinzel,serif`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.strokeStyle='rgba(245,232,200,.85)';ctx.lineWidth=3;ctx.lineJoin='round';
+    // LLM name (id without 'Nadu')
+    const shortName=k.name.replace(' Nadu','');
+    ctx.strokeText(shortName,k.x,k.y+r*pulse+7);
+    ctx.fillText(shortName,k.x,k.y+r*pulse+7);
+    // capital underneath, smaller
+    ctx.fillStyle='#6a4010';ctx.font=`${Math.floor(cw*.3)}px Lora,serif`;
+    ctx.strokeStyle='rgba(245,232,200,.7)';ctx.lineWidth=2;
+    ctx.strokeText(k.capital,k.x,k.y+r*pulse+22);
+    ctx.fillText(k.capital,k.x,k.y+r*pulse+22);
+
+    // selected ring
+    if(k.id===selectedId){
+      ctx.beginPath();ctx.arc(k.x,k.y,r*pulse+14,0,Math.PI*2);
+      ctx.strokeStyle='#d4a017';ctx.lineWidth=2;ctx.setLineDash([4,5]);ctx.stroke();ctx.setLineDash([]);
+    }
+  });
+}
+
+// ── SIDEBAR ───────────────────────────────────────────
+function statusColor(s){
+  return{Prosperous:'#27ae60',Stable:'#d4a017',Troubled:'#e67e22',Declining:'#c0392b',Fallen:'#666'}[s]||'#666';
+}
+
+function renderSidebar(){
+  const list=document.getElementById('k-list');
+  list.innerHTML='';
+  const sorted=[...kingdoms].sort((a,b)=>b.hp-a.hp);
+  sorted.forEach(k=>{
+    const div=document.createElement('div');
+    const sc=statusColor(k.status);
+    div.className='k-card'+(k.id===selectedId?' selected':'');
+    div.style.cssText=`border-color:${k.color}44;background:${k.color}08;`;
+    div.style.setProperty('--k-color',k.color);
+    const foodPct=Math.round(k.food/200*100),goldPct=Math.round(k.gold/200*100);
+    const armyPct=Math.round(k.army/200*100),hpPct=Math.round(k.hp/k.maxHp*100);
+    div.innerHTML=`
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${k.color}"></div>
+      <div class="k-card-header">
+        <div class="k-symbol" style="background:${k.color}22;border-color:${k.color};color:${k.color};font-size:18px">${k.symbol}</div>
+        <div class="k-title">
+          <div class="k-name" style="color:${k.color}">${k.name}</div>
+          <div class="k-ruler" style="color:var(--ink2)">${k.king} · ${k.queen}</div>
+        </div>
+        <span class="k-status-pill" style="color:${sc};border-color:${sc}44;background:${sc}11">${k.status}</span>
+      </div>
+      <div class="k-stats">
+        <div class="k-stat"><div class="k-stat-val" style="color:${k.color}">${Math.round(k.hp)}/${k.maxHp}</div><div class="k-stat-key">Strength</div></div>
+        <div class="k-stat"><div class="k-stat-val" style="color:#27ae60">${Math.round(k.food)}</div><div class="k-stat-key">Tokens</div></div>
+        <div class="k-stat"><div class="k-stat-val" style="color:#d4a017">${Math.round(k.gold)}</div><div class="k-stat-key">Revenue</div></div>
+      </div>
+      <div class="k-bars">
+        <div class="k-bar-row"><span class="k-bar-label">⚔️ Params</span><div class="k-bar-track"><div class="k-bar-fill" style="width:${armyPct}%;background:${k.color}"></div></div><span style="font-size:9px;color:var(--ink2);font-family:'Space Mono'">${Math.round(k.army)}</span></div>
+        <div class="k-bar-row"><span class="k-bar-label">🛕 Trust</span><div class="k-bar-track"><div class="k-bar-fill" style="width:${k.faith}%;background:#8b4513"></div></div><span style="font-size:9px;color:var(--ink2);font-family:'Space Mono'">${Math.round(k.faith)}</span></div>
+        <div class="k-bar-row"><span class="k-bar-label">🗺️ Land</span><div class="k-bar-track"><div class="k-bar-fill" style="width:${Math.min(100,k.territory.size/3)}%;background:#27ae60"></div></div><span style="font-size:9px;color:var(--ink2);font-family:'Space Mono'">${k.territory.size}</span></div>
+      </div>`;
+    div.addEventListener('click',()=>{selectedId=k.id;renderSidebar();renderDetail();draw();});
+    list.appendChild(div);
+  });
+  if(selectedId)renderDetail();
+}
+
+function renderDetail(){
+  const k=kingdoms.find(o=>o.id===selectedId);
+  const p=document.getElementById('detail-panel');
+  if(!k){p.style.display='none';return;}
+  p.style.display='block';
+  const allies=k.allies.map(id=>kingdoms.find(o=>o.id===id)?.name||id).join(', ')||'None';
+  const wars=k.wars.map(id=>kingdoms.find(o=>o.id===id)?.name||id).join(', ')||'None';
+  p.innerHTML=`
+    <div class="detail-title" style="color:${k.color}">${k.symbol} ${k.capital} · ${k.name}</div>
+    <div style="font-size:10px;font-style:italic;color:var(--ink2);margin-bottom:8px">"${k.desc}"</div>
+    <div class="detail-grid">
+      <div class="detail-cell"><div class="detail-cell-key">Founder</div><div class="detail-cell-val" style="font-size:11px;font-family:'Lora'">${k.king}</div></div>
+      <div class="detail-cell"><div class="detail-cell-key">Co-founder</div><div class="detail-cell-val" style="font-size:11px;font-family:'Lora'">${k.queen}</div></div>
+      <div class="detail-cell"><div class="detail-cell-key">Territory</div><div class="detail-cell-val">${k.territory.size} cells</div></div>
+      <div class="detail-cell"><div class="detail-cell-key">API Routes</div><div class="detail-cell-val">${Math.round(k.trade)}</div></div>
+      <div class="detail-cell" style="grid-column:span 2"><div class="detail-cell-key">Allies</div><div class="detail-cell-val" style="color:#27ae60;font-size:10px;font-family:'Lora'">${allies}</div></div>
+      <div class="detail-cell" style="grid-column:span 2"><div class="detail-cell-key">At War With</div><div class="detail-cell-val" style="color:#c0392b;font-size:10px;font-family:'Lora'">${wars}</div></div>
+    </div>
+    <div class="achievement-chips">${k.achievements.map(a=>`<span class="achievement">✦ ${a}</span>`).join('')}${k.traits.map(t=>`<span class="achievement" style="font-style:italic">${t}</span>`).join('')}</div>`;
+}
+
+// ── LOG ───────────────────────────────────────────────
+function logEvent(kingdom,msg,color){
+  const log=document.getElementById('log');
+  const d=document.createElement('div');
+  d.className='log-entry';
+  d.style.borderLeftColor=color||'#d4a017';
+  d.innerHTML=`<span class="log-tick">Year ${year}, Day ${day}</span><span class="log-who" style="color:${color}">${kingdom.name}</span> — ${msg}`;
+  log.prepend(d);
+  while(log.children.length>120)log.removeChild(log.lastChild);
+}
+
+let toastTimer=null;
+function showToast(msg,color){
+  const t=document.getElementById('toast');
+  t.style.borderColor=color||'#d4a017';t.textContent=msg;t.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── CONTROLS ──────────────────────────────────────────
+function setSpeed(s){if(timer)clearInterval(timer);if(s>0)timer=setInterval(step,s);}
+document.getElementById('btn-play').addEventListener('click',()=>{
+  running=!running;const btn=document.getElementById('btn-play');
+  if(running){btn.textContent='⏸ PAUSE';btn.classList.add('active');setSpeed(fast?100:500);}
+  else{btn.textContent='▶ PLAY';btn.classList.remove('active');clearInterval(timer);timer=null;}
+});
+document.getElementById('btn-fast').addEventListener('click',()=>{
+  fast=!fast;document.getElementById('btn-fast').classList.toggle('active',fast);
+  if(running)setSpeed(fast?100:500);
+});
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  clearInterval(timer);timer=null;running=false;fast=false;
+  document.getElementById('btn-play').textContent='▶ PLAY';
+  document.getElementById('btn-play').classList.remove('active');
+  document.getElementById('btn-fast').classList.remove('active');
+  initWorld();
+});
+document.getElementById('map').addEventListener('click',e=>{
+  const rect=e.target.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(e.target.width/rect.width);
+  const my=(e.clientY-rect.top)*(e.target.height/rect.height);
+  let hit=null,best=999;
+  kingdoms.forEach(k=>{const d=Math.hypot(k.x-mx,k.y-my);if(d<38&&d<best){best=d;hit=k.id;}});
+  selectedId=hit;renderSidebar();
+  if(hit)renderDetail();else document.getElementById('detail-panel').style.display='none';
+  draw();
+});
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+function resizeCanvas(){
+  const canvas=document.getElementById('map');
+  const p=canvas.parentElement;
+  canvas.width=p.clientWidth;canvas.height=p.clientHeight;
+  if(kingdoms.length){
+    const cw=canvas.width/GRID,ch=canvas.height/GRID;
+    kingdoms.forEach(k=>{k.x=(k.homeX+.5)*cw;k.y=(k.homeY+.5)*ch;});
+  }
+  draw();
+}
+window.addEventListener('resize',resizeCanvas);
+window.addEventListener('load',()=>{
+  resizeCanvas();initWorld();
+  logEvent(kingdoms[0],'The great AI Nadu kingdoms awaken. Let the chronicles begin!','#d4a017');
+  showToast('👑 AI Nadu — Five LLM kingdoms arise!','#d4a017');
+});
+</script>
+</body>
+</html>
