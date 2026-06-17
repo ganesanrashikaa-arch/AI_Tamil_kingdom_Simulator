@@ -170,8 +170,8 @@ canvas#map{display:block;width:100%;height:100%;}
 <body>
 <header>
   <div>
-    <div class="header-title">AI Nadu · THE LLM KINGDOMS</div>
-    <div class="header-sub">South India, age of the great model dynasties</div>
+    <div class="header-title">AI Nadu · THE GREAT RAIDER WAR ⚔️</div>
+    <div class="header-sub">All five kingdoms march as raiders — only one dynasty shall remain</div>
   </div>
   <div style="flex:1"></div>
   <div class="season-badge" id="season-badge">KAAR KAALAM · Monsoon</div>
@@ -235,42 +235,42 @@ const KINGDOM_DEFS=[
   {
     id:'claude',name:'Claude Nadu',symbol:'🔶',color:'#e8895c',
     king:'Raja Dario Amodei',queen:'Rani Daniela Devi',
-    capital:'Anthropolis',traits:['Helpful & Harmless','Temple of Safety','Honest Scribes'],
-    homeCol:18,homeRow:16,strategy:'expansionist',
-    desc:'Guardians of helpful, harmless and honest AI. Builders of the grandest reasoning temples.',
-    achievements:['Constitutional AI','Safety Doctrine','Bronze Reasoning'],
+    capital:'Anthropolis',traits:['⚔️ Raider','Strike First','Seize Territory'],
+    homeCol:18,homeRow:16,strategy:'raider',
+    desc:'Once a peaceful kingdom, Claude Nadu now marches with iron resolve. The paddy fields burn behind their advancing armies.',
+    achievements:['Constitutional Sword','Safety Blade','Reasoning Ram'],
   },
   {
     id:'gpt',name:'GPT Nadu',symbol:'⚫',color:'#74c69d',
     king:'Raja Sam Altman',queen:'Rani Mira Murati',
-    capital:'OpenAI Puram',traits:['Creative Traders','Plugin Masters','Token Poets'],
-    homeCol:22,homeRow:10,strategy:'trader',
-    desc:'Masters of the token sea, patrons of creative arts and plugin commerce.',
-    achievements:['RLHF Scrolls','Plugin Bazaar','ChatGPT Throne'],
+    capital:'OpenAI Puram',traits:['⚔️ Raider','Token Plunderer','Plugin Pillager'],
+    homeCol:22,homeRow:10,strategy:'raider',
+    desc:'The merchant kingdom turned warlord. Raja Sam commands vast armies funded by enterprise gold.',
+    achievements:['RLHF War Scroll','Plugin Siege','ChatGPT Conquest'],
   },
   {
     id:'gemini',name:'Gemini Nadu',symbol:'♊',color:'#7bbcf5',
     king:'Raja Sundar Pichai',queen:'Rani Demis Hassabis',
-    capital:'DeepMind Nagari',traits:['Multimodal Seers','Search Lords','Data Ocean Masters'],
-    homeCol:8,homeRow:16,strategy:'defender',
-    desc:'Lords of the vast data ocean, masters of sight, sound and text united.',
-    achievements:['AlphaFold Shrine','Search Fortress','Multimodal Ghats'],
+    capital:'DeepMind Nagari',traits:['⚔️ Raider','Data Ravager','Search Striker'],
+    homeCol:8,homeRow:16,strategy:'raider',
+    desc:'The ocean kingdom unleashes its multimodal fury. Every shore it touches becomes a battlefield.',
+    achievements:['AlphaFold Spear','Search Storm','Multimodal March'],
   },
   {
     id:'llama',name:'Llama Nadu',symbol:'🦙',color:'#ffd166',
     king:'Raja Mark Zuckerberg',queen:'Rani Yann LeCun',
-    capital:'Meta Mandapam',traits:['Open Source Rishis','Community Builders','Weight Sharers'],
-    homeCol:18,homeRow:8,strategy:'builder',
-    desc:'Scholar kings who open their sacred weights to all. Builders of the people\'s temples.',
-    achievements:['Open Weights','Community Ashram','Research Scrolls'],
+    capital:'Meta Mandapam',traits:['⚔️ Raider','Open Source Fury','Weight Breaker'],
+    homeCol:18,homeRow:8,strategy:'raider',
+    desc:'The open kingdom opens its gates — for war. Meta Mandapam sends its open-weight armies to every corner.',
+    achievements:['Open War Chest','Community Siege','Research Raid'],
   },
   {
     id:'mistral',name:'Mistral Nadu',symbol:'🌬️',color:'#f08080',
     king:'Raja Arthur Mensch',queen:'Rani Sophia Yang',
-    capital:'Paris Nagaram',traits:['Lean Warriors','European Nobles','Efficient Archers'],
+    capital:'Paris Nagaram',traits:['⚔️ Raider','Lean Striker','Swift Pillager'],
     homeCol:10,homeRow:24,strategy:'raider',
-    desc:'Fierce lean warriors from the western lands — swift, efficient, fiercely independent.',
-    achievements:['Mixtral Blade','Efficient Quivers','French Charter'],
+    desc:'The leanest army in the land. Mistral Nadu strikes fast, wastes nothing, and retreats before the dust settles.',
+    achievements:['Mixtral Blade','Efficient Quivers','French Fury'],
   },
 ];
 
@@ -549,33 +549,35 @@ function doStrategy(k){
       break;
     }
     case'raider':{
-      if(k.army>40&&Math.random()<.35){
-        const target=pick(alive.filter(o=>!k.allies.includes(o.id)));
+      // all five are raiders — much higher aggression, target whoever is weakest
+      if(k.army>25&&Math.random()<.55){
+        const enemies=alive.filter(o=>!k.allies.includes(o.id));
+        const target=enemies.sort((a,b)=>a.hp-b.hp)[0];
         if(target)battle(k,target);
       }
-      if(Math.random()<.3)expandTerritory(k);
-      if(k.gold<30)k.gold+=randi(3,8);// plunder
+      if(Math.random()<.35)expandTerritory(k);
+      if(k.gold<40)k.gold+=randi(4,10);// plunder
+      // recruit soldiers with gold
+      if(k.gold>60&&k.army<100&&Math.random()<.3){k.army+=randi(5,12);k.gold-=8;}
       break;
     }
   }
 }
 
 function battle(attacker,defender){
-  const atkPow=attacker.army*.8+attacker.gold*.1;
-  const defPow=defender.army*.6+defender.hp*.2;
-  const dmgToDefender=clamp(randi(6,20)*(atkPow/Math.max(defPow,20)),2,30);
-  const dmgToAttacker=clamp(randi(3,12)*(defPow/Math.max(atkPow,20)),1,18);
+  const atkPow=attacker.army*.9+attacker.gold*.12;
+  const defPow=defender.army*.8+defender.hp*.15;
+  const dmgToDefender=clamp(randi(8,26)*(atkPow/Math.max(defPow,20)),3,35);
+  const dmgToAttacker=clamp(randi(5,16)*(defPow/Math.max(atkPow,20)),2,22);
   defender.hp=clamp(defender.hp-dmgToDefender,0,defender.maxHp);
   attacker.hp=clamp(attacker.hp-dmgToAttacker,0,attacker.maxHp);
-  attacker.army=clamp(attacker.army-randi(3,8),0,200);
-  defender.army=clamp(defender.army-randi(2,6),0,200);
+  attacker.army=clamp(attacker.army-randi(4,10),0,200);
+  defender.army=clamp(defender.army-randi(3,8),0,200);
   if(!attacker.wars.includes(defender.id))attacker.wars.push(defender.id);
   if(!defender.wars.includes(attacker.id))defender.wars.push(attacker.id);
-  logEvent(attacker,`⚔️ attacked <span class="log-who" style="color:${defender.color}">${defender.name}</span>! (−${Math.round(dmgToDefender)} HP)`,attacker.color);
+  logEvent(attacker,`⚔️ War drums! Storms <span class="log-who" style="color:${defender.color}">${defender.name}</span>! (−${Math.round(dmgToDefender)} to them · −${Math.round(dmgToAttacker)} to us)`,attacker.color);
   spawnParticles(attacker.x,attacker.y,defender.x,defender.y,attacker.color,'battle');
-
-  // steal some territory
-  if(Math.random()<.4&&defender.hp<60){stealTerritory(attacker,defender);}
+  if(Math.random()<.45&&defender.hp<55){stealTerritory(attacker,defender);}
 }
 
 function formAlliance(a,b){
@@ -1033,8 +1035,8 @@ function resizeCanvas(){
 window.addEventListener('resize',resizeCanvas);
 window.addEventListener('load',()=>{
   resizeCanvas();initWorld();
-  logEvent(kingdoms[0],'The great AI Nadu kingdoms awaken. Let the chronicles begin!','#d4a017');
-  showToast('👑 AI Nadu — Five LLM kingdoms arise!','#d4a017');
+  logEvent(kingdoms[0],'⚔️ ALL FIVE KINGDOMS MARCH AS RAIDERS. Blood will stain the paddy fields. Let the chronicles of war begin!','#c0392b');
+  showToast('⚔️ The Great Raider War — all five kingdoms charge!','#c0392b');
 });
 </script>
 </body>
