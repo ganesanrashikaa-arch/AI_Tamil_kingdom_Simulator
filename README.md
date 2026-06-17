@@ -1,4 +1,4 @@
-# AI Nadu — The LLM Kingdom Simulator 🏯
+# AI Nadu — The LLM Kingdom Simulator 
 
 > *What if the world's major AI models were South Indian Tamil kingdoms — with kings, queens, crop fields, temples, armies, and tiny walking people?*
 
@@ -26,7 +26,7 @@ You watch it all happen in real time.
 
 ## Live Demo
 
-👉 **[Play the simulator here](https://yourusername.github.io/ai-tamil-kingdom-simulator/tamil_kingdom.html)**
+👉 **[Play the simulator here]( https://ganesanrashikaa-arch.github.io/AI_Tamil_kingdom_Simulator/)**
 
 No installation. No login. Opens directly in your browser.
 
@@ -226,10 +226,6 @@ Feel free to fork and extend it. Some ideas worth exploring:
 
 ---
 
-## License
-
-MIT — use it, fork it, build on it.
-
 ---
 
-*Built with Claude (Anthropic) · One evening · One HTML file · Zero regrets*
+*Built with Claude (Anthropic)
